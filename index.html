@@ -1,0 +1,162 @@
+<html>
+  <head>
+    <title>Hamilton - After School Clubs</title>
+    <script src="https://unpkg.com/vue"></script>
+    <script src="lessons.js"></script>
+    <!-- font awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"
+    />
+    <link href="tailwind.css" rel="stylesheet">
+  
+  </head>
+
+  <body >
+    <div id="app">
+      <header  class="p-4 flex w-full bg-gray-700 text-white font-bold justify-between">
+        <!-- <h1 v-text="sitename"></h1>  -->
+        <img class="bg-white w-40 h-30 p-2 "  src="images/logo.png"/>
+      
+        <button v-on:click="showCheckout" class="bg-green-700 w-40 font-bold h-10 p-2 rounded-lg">
+          {{cartItemCount}}
+          <span class="fas fa-cart-plus"></span>
+          Checkout
+        </button>
+      </header>
+    
+      <main>    
+        <div v-if="showLesson">
+          <div class="container mx-auto  flex w-screen ">
+            <label>Search: </label>
+          <input type="text" v-model="search" placeholder="Search subject.."/>
+        <!-- <label>Search title:</label> -->
+          <!-- <button v-on:Click="sortLowest">Low</button> -->
+          <input type="radio" v-on:Click="ascending">Ascending
+          <input type="radio" v-on:Click="descending">Descending 
+          <input type="radio" v-on:Click="sortLocation">Location
+          <input type="radio" v-on:Click="sortAvailability"> Availability
+          <input type="radio" v-on:Click="sortLowestPrice"/> Low Price
+          <input type="radio" v-on:Click="sortHighestPrice"/> Ligh Price
+        </div>
+          <div class="grid grid-flow-row grid-cols-4 gap-6" >
+          <div v-for="lesson in getfilteredSearch" class="group relative">           
+            <div class="w-full min-h-80 bg-gray-200 aspect-w-1 aspect-h-1 rounded-md overflow-hidden group-hover:opacity-75 lg:h-80 lg:aspect-none">
+              <img class="w-50 h-50 object-center " v-bind:src="lesson.image" />
+            </div>
+            <h2 v-text="lesson.subject"></h2>
+            <p v-html="lesson.location"></p>
+            <p>Price: {{lesson.price}}</p>
+            <p>Available stock : {{lesson.spaces - cartCount(lesson)}}</p>
+            <button class="bg-blue-600 rounded-xl p-1" v-on:click="addToCart(lesson)" v-if="canAddToCart(lesson)">
+              Add to Cart
+            </button>
+            <button class="bg-gray-300 rounded-xl p-1 " disabled="disabled" v-else>Add to Cart</button>
+            <span v-if="lesson.spaces - cartCount(lesson) == 0">
+              All out!</span
+            > 
+            <span v-else-if="lesson.spaces - cartCount(lesson) < 5">
+              Only {{lesson.spaces - cartCount(lesson)}} left!
+            </span>
+            <span v-else>Buy Now!</span>
+            <!-- </div> -->
+           <p>
+              <span v-for="n in lesson.rating">★</span>
+              <span v-for="n in 5-lesson.rating">☆</span>
+            </p>
+          </div>
+        </div>
+        </div>
+   
+       <div v-else>
+          <h2>Checkout</h2>
+          <div v-for="(lesson, index) in cart" :key="lesson.id">           
+            <figure>
+              <img v-bind:src="lesson.image" />
+            </figure>
+            <h2 v-text="lesson.subject"></h2>
+            <p v-html="lesson.location"></p>
+            <button v-on:click="removeFromCart(index, lesson)">
+             remove from cart
+            </button>
+        </div>
+      </main>
+    </div>
+
+    <script type="text/javascript">
+      var webstore = new Vue({
+        el: "#app",
+        data: {
+          sitename: "Hamilton - After School Clubs",
+          lessons: lessons,
+          cart: [],
+          search: '',
+          showLesson: true
+        },
+        methods: {
+          addToCart(lesson) {
+            this.cart.push(lesson);
+            lesson.spaces--;
+          },
+          removeFromCart(index, lesson){
+            this.cart.splice(index, 1);
+            lesson.spaces++;
+          },
+          showCheckout() {
+            this.showLesson = this.showLesson ? false : true;
+          },
+          submitForm() {
+            alert("Order Submitted");
+          },
+          canAddToCart(lesson) {
+            return lesson.spaces > this.cartCount(lesson);
+          },
+          // cartCount -- it will check the id if its valid it will increment runs each time 
+          cartCount(lesson){
+            let count =0;
+            for(let i =0; i < this.cart.length; i++){
+              if(this.cart[i] === lesson ){
+                // count++
+              }
+            }
+            return count;
+          },
+          sortLowestPrice(){
+            this.lessons.sort((a, b) => a.price > b.price ? 1 : -1);
+          },
+          sortHighestPrice(){
+            this.lessons.sort((a, b) => a.price < b.price ? 1 : -1);
+          },
+          ascending(){
+          this.lessons.sort((a, b) => (a.subject > b.subject) ? 1 : -1);
+          },
+          descending(){
+          this.lessons.sort((a, b) => (a.subject < b.subject) ? 1 : -1);
+          },
+          sortLocation(){
+          this.lessons.sort((a, b) => (a.location > b.location) ? 1 : -1);
+          },
+          sortAvailability(){
+          this.lessons.sort((a, b) => (a.spaces < b.spaces) ? 1 : -1);
+          },
+          sortHighRating(){
+          this.lessons.sort((a, b) => (a.rating < b.rating) ? 1 : -1);
+          },
+          // descending(){
+          // this.lessons.sort((a, b) => (a.subject < b.subject) ? 1 : -1);
+          // }
+        },
+        computed: {
+          cartItemCount() {
+            return this.cart.length;
+          },
+          getfilteredSearch() {
+          const searchInput = this.search.toLowerCase();
+          const isMatched = str => str.toLowerCase().includes(searchInput);
+          return this.lessons.filter(lesson => isMatched(lesson.subject) || isMatched(lesson.location));
+          }
+        }
+      });
+    </script>
+  </body>
+</html>
